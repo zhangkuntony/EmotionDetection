@@ -51,7 +51,7 @@ val_gen = HDF5DatasetGenerator(config.VAL_HDF5, config.BATCH_SIZE, aug=val_aug, 
 if args["model"] is None:
     print("[INFO] compiling model ...")
     model = EmotionVGGNet.build(width=48, height=48, depth=1, classes=config.NUM_CLASSES)
-    opt = Adam(lr=1e-3)
+    opt = Adam(learning_rate=1e-4)
     model.compile(loss="categorical_crossentropy", optimizer=opt, metrics=["accuracy"])
 
 # 指定了具体的checkpoint
@@ -61,9 +61,9 @@ else:
     model = load_model(args["model"])
 
     # 获取当前参数
-    print("[INFO] old learning rate: {}".format(backend.get_value(model.optimizer.lr)))
-    backend.set_value(model.optimizer.lr, 1e-5)
-    print("[INFO] new learning rate: {}".format(backend.get_value(model.optimizer.lr)))
+    print("[INFO] old learning rate: {}".format(backend.get_value(model.optimizer.learning_rate)))
+    backend.set_value(model.optimizer.learning_rate, 1e-5)
+    print("[INFO] new learning rate: {}".format(backend.get_value(model.optimizer.learning_rate)))
 
 # 定义回调函数
 figPath = os.path.sep.join([config.OUTPUT_PATH, "vggnet_emotion.png"])
@@ -74,13 +74,12 @@ callbacks = [
 ]
 
 # 训练网络
-model.fit_generator(
+model.fit(
     train_gen.generator(),
     steps_per_epoch=train_gen.numImages // config.BATCH_SIZE,
     validation_data=val_gen.generator(),
     validation_steps=val_gen.numImages // config.BATCH_SIZE,
     epochs=15,
-    max_queue_size=10,
     callbacks=callbacks,
     verbose=1
 )
