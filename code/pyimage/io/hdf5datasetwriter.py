@@ -6,12 +6,11 @@ class HDF5DatasetWriter:
     # 初始化：dims指定存储数据的shape[N, H, W], hdf文件的位置
     def __init__(self, dims, output_path, data_key="images", buf_size=1000):
         # check to see if the output path exists,
-        # and if so, raise an exception
-        # 判断输出路径是否存在，若存在，则抛出异常
+        # and if so, remove it to allow overwriting
+        # 判断输出路径是否存在，若存在，则删除以允许覆盖
         if os.path.exists(output_path):
-            raise ValueError("The supplied `output_path` already "
-				"exists and cannot be overwritten. Manually delete "
-				"the file before continuing.", output_path)
+            print("[INFO] Overwriting existing file: {}".format(output_path))
+            os.remove(output_path)
 
         # open the HDF5 database for writing and create two datasets:
         # one to store the images/features and another to store the

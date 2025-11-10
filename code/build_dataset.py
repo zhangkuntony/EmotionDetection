@@ -52,7 +52,7 @@ for row in f:
         trainLabels.append(label)
 
     # check if this is a validation image
-    if usage == "PrivateTest":
+    elif usage == "PrivateTest":
         valImages.append(image)
         valLabels.append(label)
 

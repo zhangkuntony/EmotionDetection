@@ -60,15 +60,15 @@ class EmotionVGGNet:
         model.add(MaxPooling2D(pool_size=(2, 2)))
         model.add(Dropout(0.25))
 
-        # Block #4: first set of FC => RELU layers
+        # Block #4: first set of FC => RELU layers - 增加全连接层神经元数量
         model.add(Flatten())
-        model.add(Dense(64, kernel_initializer="he_normal"))
+        model.add(Dense(256, kernel_initializer="he_normal"))
         model.add(ELU())
         model.add(BatchNormalization())
         model.add(Dropout(0.5))
 
         # Block #5: second set of FC => RELU layers
-        model.add(Dense(64, kernel_initializer="he_normal"))
+        model.add(Dense(128, kernel_initializer="he_normal"))
         model.add(ELU())
         model.add(BatchNormalization())
         model.add(Dropout(0.5))

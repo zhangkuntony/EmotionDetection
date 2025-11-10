@@ -17,6 +17,7 @@ from pyimage.nn.conv.emotionvggnet import EmotionVGGNet
 from tensorflow.keras.preprocessing.image import ImageDataGenerator
 from tensorflow.keras.optimizers import Adam
 from tensorflow.keras.models import load_model
+from tensorflow.keras.callbacks import ReduceLROnPlateau, EarlyStopping
 import tensorflow.keras.backend as backend
 import argparse
 import os
@@ -34,8 +35,17 @@ args = vars(ap.parse_args())
 
 # construct the training and testing image generators for data
 # augmentation, then initialize the image preprocessor
-# 图像增强
-train_aug = ImageDataGenerator(rotation_range=10, zoom_range=0.1, horizontal_flip=True, rescale=1 / 255.0, fill_mode="nearest")
+# 图像增强 - 加强数据增强以提升模型泛化能力
+train_aug = ImageDataGenerator(
+    rotation_range=20,           # 增加旋转范围
+    width_shift_range=0.15,       # 添加水平平移
+    height_shift_range=0.15,      # 添加垂直平移
+    zoom_range=0.2,              # 增加缩放范围
+    horizontal_flip=True,
+    shear_range=0.1,              # 添加剪切变换
+    fill_mode="nearest",
+    rescale=1 / 255.0
+)
 val_aug = ImageDataGenerator(rescale=1 / 255.0)
 # 实例化
 iap = ImageToArrayPreprocessor()
@@ -69,9 +79,16 @@ else:
 # 定义回调函数
 figPath = os.path.sep.join([config.OUTPUT_PATH, "vggnet_emotion.png"])
 jsonPath = os.path.sep.join([config.OUTPUT_PATH, "vggnet_emotion.json"])
+
+# 添加学习率调度器和早停
+reduce_lr = ReduceLROnPlateau(monitor='val_accuracy', factor=0.5, patience=5, min_lr=1e-6, verbose=1)
+early_stop = EarlyStopping(monitor='val_accuracy', patience=10, restore_best_weights=True, verbose=1)
+
 callbacks = [
     EpochCheckpoint(args["checkpoints"], every=5, start_at=args["start_epoch"]),
-    TrainingMonitor(figPath, jsonPath, start_at=args["start_epoch"])
+    TrainingMonitor(figPath, jsonPath, start_at=args["start_epoch"]),
+    reduce_lr,
+    early_stop
 ]
 
 # 训练网络
@@ -80,7 +97,7 @@ model.fit(
     steps_per_epoch=train_gen.numImages // config.BATCH_SIZE,
     validation_data=val_gen.generator(),
     validation_steps=val_gen.numImages // config.BATCH_SIZE,
-    epochs=75,
+    epochs=75,  # 增加训练轮次
     callbacks=callbacks,
     verbose=1
 )

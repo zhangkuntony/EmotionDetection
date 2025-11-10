@@ -2,3 +2,4 @@
 __pycache__
 code/hdf5/
 code/dataset/
+code/checkpoints/

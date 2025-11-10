@@ -17,8 +17,8 @@ TRAIN_HDF5 = path.sep.join([BASE_PATH, "hdf5/train.hdf5"])
 VAL_HDF5 = path.sep.join([BASE_PATH, "hdf5/val.hdf5"])
 TEST_HDF5 = path.sep.join([BASE_PATH, "hdf5/test.hdf5"])
 
-# define the batch size
-BATCH_SIZE = 128
+# define the batch size - 减小批量大小以获得更好的训练稳定性
+BATCH_SIZE = 64
 
 # define the path to where output logs will be stored
 OUTPUT_PATH = path.sep.join([BASE_PATH, "output"])
