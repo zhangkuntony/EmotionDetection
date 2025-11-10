@@ -1,6 +1,6 @@
 # USAGE
-# python train_recognizer.py --checkpoints fer2013/checkpoints
-# python train_recognizer.py --checkpoints fer2013/checkpoints --model fer2013/checkpoints/epoch_20.hdf5 --start-epoch 20
+# python train_recognizer.py --checkpoints checkpoints
+# python train_recognizer.py --checkpoints checkpoints --model checkpoints/epoch_40.hdf5 --start-epoch 10
 
 # set the matplotlib backend so figures can be saved in the background
 # 工具包
@@ -29,7 +29,7 @@ ap.add_argument("-c", "--checkpoints", required=True, help="path to checkpoints 
 # 指定获取哪个具体的checkpoint
 ap.add_argument("-m", "--model", type=str, help="path to *specific* model checkpoint to load")
 # 指定当前开始训练的epoch
-ap.add_argument("-s", "--start_epoch", type=int, default=0, help="epoch to restart training at")
+ap.add_argument("-s", "--start-epoch", type=int, default=0, help="epoch to restart training at")
 args = vars(ap.parse_args())
 
 # construct the training and testing image generators for data
@@ -62,8 +62,9 @@ else:
 
     # 获取当前参数
     print("[INFO] old learning rate: {}".format(backend.get_value(model.optimizer.learning_rate)))
-    backend.set_value(model.optimizer.learning_rate, 1e-5)
-    print("[INFO] new learning rate: {}".format(backend.get_value(model.optimizer.learning_rate)))
+    # 设置新的学习率（更安全的方法：重新编译模型）
+    model.compile(loss="categorical_crossentropy", optimizer=Adam(learning_rate=1e-5), metrics=["accuracy"])
+    print("[INFO] new learning rate: 1e-5 (模型已重新编译)")
 
 # 定义回调函数
 figPath = os.path.sep.join([config.OUTPUT_PATH, "vggnet_emotion.png"])
@@ -79,7 +80,7 @@ model.fit(
     steps_per_epoch=train_gen.numImages // config.BATCH_SIZE,
     validation_data=val_gen.generator(),
     validation_steps=val_gen.numImages // config.BATCH_SIZE,
-    epochs=15,
+    epochs=75,
     callbacks=callbacks,
     verbose=1
 )
